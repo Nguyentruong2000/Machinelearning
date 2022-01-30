@@ -1,0 +1,268 @@
+## TIỀN XỬ LÝ DỮ LIỆU
+### CÁC KHÁI NIỆM VÀ TỔNG QUÁT VỀ DỮ LIỆU
+- **Dữ liệu bị khuyết**:
+  - MNAR: Dữ liệu khuyết không phải ngẫu nhiên nếu có 1 cơ chế hoặc 1 lý do nào đó khiến các giá trị bị khuyết đưa vào tập dữ liệu.
+  - MCAR: Dữ liệu khuyết hoàn toàn là ngẫu nghiên, với xác suất thiếu là như nhau.
+  - MCR: Dữ liệu khuyết ngẫu nhiên, Xác suất của một quan sát bị thiếu phụ thuộc vào thông tin sẵn có, nó độc lập với các biến khác trong tập dữ liệu.
+- **Nhãn hiểm (rare label)**: là những giá trị được chọn trong một nhóm các hạng mục (nhãn). Các nhãn thường xuất hiện trong tập dữ liệu có tần suất khác nhau. Nhãn hiểm có thể thêm nhiều thông tin hoặc không thêm thông tin. 
+  - Các nhãn hiểm trong hạng mục có xu hướng gây ra overfitting, đặc biệt trong các thuật toán cây
+  - Nhãn hiểm có thể xuất hiện trong  trainning set mà không xuất hiện trong test set gây ra overfitting cho tập training
+  - Nhãn hiểm có thể xuất hiện trong tập test mà không xuất hiện trong tập training, như vậy, model sẽ không biết đánh giá nó như thế nào
+- **Giả định tuyến tính**:
+Một số giả định của mô hình hồi quy tuyến tính:
+  - Độ tuyến tính (Linearity): Các giá trị trung bình của biến kết quả với mỗi gia số yếu tố dự đoán nằm dọc theo một đường thắng hay có một mối quan hệ tuyến tính giữa các yếu tố dự báo và mục tiêu
+  - Không có đa cộng tuyến hoàn hảo: Không tồn tại mối quan hệ tuyến tính tuyệt hảo giữa 2 biến hoặc nhiều yếu tố dự báo
+  - Lỗi phân phối chuẩn: Các phần dư được phân phối chuẩn ngẫu nhiên với giá trị trung bình bằng 0
+  - Phương sai không đổi: Ở mức độ của biến dự báo, phương sai của các phân tử không đổi
+- **Ngoại lai (Outlier)**: là điểm dữ liệu khác biệt đáng kể so với dữ liệu còn lại." Outlier là quan sát sai lệch rất nhiêu so với quan sát khác, làm dấy lên nghi ngờ rằng nó được tạo ra bằng 1 cơ chế khác. Tùy vào những hoàn cảnh ta loại bỏ outlier hoặc không, có một số mô hình ảnh hưởng outlier khá nhiều. 
+  - Nếu biến là phân phối chuẩn thì giá trị nằm ngoài giá trị trung bình cộng/trừ 3 lần độ lệch chuẩn là outlier
+    - outlier = mean +/- 3 * std
+  - Nếu biến phân phối lệch thì phương pháp tính IQR
+    - IQR = Q3 - Q1
+  - Outlier sẽ nằm ngoài upper boundary và lower boundary như sau:
+    - Upper boundary = Q3 + IQR*1.5
+    - Lower boundary = Q1 - IQR*1.5
+### XỬ LÝ DỮ LIỆU THIẾU (Missing Data)
+- **Xóa giá trị bị thiếu đi**
+  - Nếu dữ liệu khuyết hoàn toàn ngẫu nhiên(MCAR)
+  - Dữ liệu bị thiếu không quá 5% hoặc ít hơn 5%
+    - Ưu điểm:
+      - Dễ thực hiện, nhanh chóng
+      - Duy trì được phân phối biến( Nếu dữ liệu MCAR thì phân phối sau khi rút gọn phải khớp với phân phối ban đầu)
+    - Nhược điểm:
+      - Nó có thể là phần lớn của dữ liệu phần đầu
+      - Các quan sát bị loại trừ có thể cung cấp thông tin quan trọng
+      - Mô hình trong sản xuất, mô hình sẽ không biết các xử lý dữ liệu bị khuyết
+- **Gán giá trị trung bình - trung vị**
+  - Nếu dữ liệu bị khuyết hoàn toàn ngẫu nhiên MCAR
+  - Các quan sát bị khuyết có thể trong giống như phần lớn các quan sát trong biến 
+  - Nếu dữ liệu là phân phối chuẩn thì mean và median sẽ xấp xỉ nhau, do đó thay giá trị nào cũng được
+  - Nếu dữ liệu có phân bị lệch thì ta sẽ gán median 
+  - Dữ liệu bị khuyết không quá 5%, trong thực tế, gán mean/median rất được sử dụng, ngay cả khi dữ liệu ko phải MCAR và khuyết nhiều giá trị
+    - Ưu điểm:
+      - Dễ thực hiện, nhanh chóng
+    - Nhược điểm
+      - Làm thay đổi phân phối biến ban đầu
+      - Làm thay đổi phương sai ban đầu
+      - Làm thay đổi ma trận hiệp phương sai so với các biến còn lại trong tập dữ liệu
+- **Gán giá trị bất kỳ**
+  - Nếu dữ liệu không khuyết ngẫu nhiên MNAR
+    - Ưu điểm:
+      - Dễ thực hiện,nhanh chóng
+      - Nắm bắt được tầm quan trọng của của khuyết nếu có 
+    - Nhược điểm:
+      - Thay đổi phương sai và dạng phân phối ban đầu
+      - Nếu giá trị nằm ở cuối phân phối, nó che dấu hoặc tạo ra các giá trị outlier
+      - Cần cận thận chọn để không phải một giá trị bất kỳ nào quá giống mean/median
+      - Thay đổi ma trận hiệp phương sai so với các biến còn lại   
+- **Gán giá trị ở cuối phân phối**
+  - Các dữ liệu không khuyết ngẫu nhiên MNAR
+    - Ưu điểm:
+      - Dễ thực hiện và nhanh chóng
+      - Nắm bắt được tầm quan trọng giá trị bị khuyết 
+    - Nhược điểm:
+      - Làm thay đổi dạng phân phối ban đầu và thay đổi phương sai , ma trận phương sai
+      - Làm che dấu các điểm outlier 
+- **Gán giá trị hạng mục hay xuất hiện**
+  - Dữ liệu khuyết hoàn toàn ngẫu nhiên MNAR
+  - Các giá trị bị khuyết hầu hết trong giống với mode
+  - Dữ liệu không quá 5%
+    - Ưu điểm:
+      - Dễ thực hiện, nhanh chóng
+    - Nhược điểm:
+      - Làm biến dạng mối quan hệ nhãn thường xuất hiện với biến khác
+      - Có gây overfit của nhãn thường xuất hiện nếu nhiều giá trị Na    
+- **Gán giá trị bị thiếu với một hạng mục mới**
+  - Phù hợp với nhiều giá trị bị khuyết 
+    - Ưu điểm:
+      - Dễ dàng thực hiện, nhanh chóng
+      - Không có giả định về dữ liệu
+    - Nhược điểm:
+      - Nếu số lượng Na quá nhỏ và bổ sung thêm hạng mục có thể gây overfit  
+- **Gán mẫu ngẫu nhiên**
+  - Gán mẫu ngẫu nhiên gồm việc 1 quan sát ngẫu nhiên từ vùng các quan sát có sẵn của biến và sử dụng giá trị được trích xuất ngẫu nhiên đó để điền NA. Trong gán mẫu ngẫu nhiên, càng có nhiều giá trị Na trong biến thì càng lấy nhiều quan sát ngẫu nhiên
+  - Giả định dữ liệu khuyết hoàn toàn ngẫu nhiên MCAR
+    - Ưu điểm:
+      - Dễ thực hiện,nhanh chóng
+      - Bảo toàn phương sai 
+    - Nhược điểm: 
+      - Tính ngẫu nhiên
+      - Mối quan hệ của các biến gán với biến khác sẽ bị ảnh hưởng
+      - Cần nhiều bộ nhớ triển khai, vì chúng ta cần lưu trữ tập huấn luyện ban đầu để trích xuất các giá trị thay Na 
+   - Dữ liệu bị khuyết không quá 5%
+   - Phù hợp cho mô hình tuyến tính vì nó không thay đổi phân phối ban đầu
+- **Gán chỉ số khuyết dữ liệu**
+  -  Dữ liệu không bị khuyết ngẫu nhiên, chúng ta có thể thay thể các giá trị quan sát mean,median,mode và gắn thêm cờ các giá trị bị khuyết đó, cờ sẽ là chỉ số nhị phân 0/1
+  -  Cặp kết hợp: Mean/median + chỉ số , mode + chỉ số, mẫu ngẫu nhiên + chỉ số
+  -  Dữ liệu bị khuyết ko có tính dự đoán
+      - Ưu điểm:
+        -  Dễ thực hiện
+        -  Nắm bắt được tầm quan trọng của khuyết
+      - Nhược điểm:
+        - Mở rộng không gian đặc trưng
+        - Biến ban đầu vẫn cần được gán để loại bỏ Na 
+- **Gán theo KNN**
+  - Các giá trị bị khuyết được ước tính như giá trị trung bình từ K neighbour (lân cận) gần nhất
+  - Thư viện: Sklearn.impute.KNNImputer
+
+### MÃ HÓA DỮ LIỆU (Encoding Data)
+- **Mã hóa one-hot**
+  - Mã hóa one-hot là mã hóa từng hạng mục với biến boolean khác nhận các giá trị 0 hoặc 1
+  - Mã hóa K-1: tính đến việc sử dụng ít hơn 1 thứ nguyên nhưng vẫn biểu diễn được toàn bộ thông tin và tránh đưa vào thông tin dư thừa
+  - Mã hóa K: Khi xây dựng thuật toán cây, Khi lựa chọn đặc trưng bởi các thuật toán đệ quy, Khi muốn xác định mức quan trọng từng hạng mục riêng lẻ
+    - Ưu điểm:
+      - Dễ thực hiện
+      - Không đưa ra giả định về các hạng mục hoặc phân phối của biến hạng mục
+      - Giữa được thông tin của biến hạng mục
+      - Thích hợp mô hình tuyến tính 
+    - Nhược điểm: 
+      - Mở rộng không gian đặc trưng
+      - Nhiều biến giả có thể giống nhau, đưa ra thông tin dư thừa
+      - Không thêm được thông tin sau khi đã mã hóa
+   - Thư viện hỗ trợ: pandas,sklearn,feature-engine 
+- **Mã hóa hạng mục thường xuất hiện (OHE)**
+  - Khi cardinality cao và nhãn hiểm có thể chỉ xuất hiện trong tập training, gây ra overfit hoặc chỉ trong tập test và gặp rắc rối và tính toán khi không gian đặc trưng quá lớn
+  - Lựa chọn ngưỡng những hạng mục hay xuất hiện và mã hóa one-hot
+    - Ưu điểm:
+      - Dễ thực hiện, nhanh chóng
+      - Không mở rộng quá nhiều không gian đặc trưng
+      - Thích hợp mô hình tuyến tính
+    - Nhược điểm:
+      - Dễ mất thông tin khi bỏ qua nhãn đó
+      - Không thêm được thông tin sau khi đã mã hóa
+  - Thư viện hỗ trợ: Pandas, Sklearn,Feature-engine
+
+- **Mã hóa số nguyên**
+  - Thay thế các hạng mục thay thế bằng chữ số 0-n
+    - Ưu điểm:
+      - Dễ dàng triển khai
+      - Không mở rộng không gian đặc trưng 
+    - Nhược điểm: 
+      - Không thu thấp được thông tin về nhãn hạng mục
+      - Không thích hợp mô hình tuyến tính
+  - Thư viện hỗ trợ: Pandas, Sklearn,Feature-engine
+
+- **Mã hóa có mục tiêu**
+  - Tính đơn điệu
+    - Khi một giá trị của 1 biến tăng lên thì giá trị biến kia cũng vậy
+    - Khi 1 biến tăng, biến kia lại giảm
+  - Ưu điểm
+    - Nắm bắt thông tin trong hạng mục
+    - Tạo mối quan hệ đơn điệu của biến và mục tiêu đề phù hợp mô hình tuyến tính
+    - Không mở rộng không gian đặc trưng
+  - Nhược điểm:
+    - Dễ dẫn tới overfitting
+    - Khó kiểm định chéo với các thư viện hiện tại
+  - Thư viện hỗ trợ: Pandas, Featue-engine 
+- **Mã hóa đếm_tần số**
+  -  Chúng ta thay thế các hạng mục bằng số lượng quan sát hiện thị hạng mục trong tập dữ liệu, chúng ta cũng có thể thay thế hạn mục bằng tần số hoặc tỷ lệ phần trăm
+  -  Ưu điểm
+     - Đơn giản
+     - Không mở rộng không gian đặc trưng   
+  -  Nhược điểm 
+     - Nếu 2 hạng mục khác nhau có cùng tần số xuất hiện trong tập dữ liệu, tức là chúng có số lượng quan sát giống nhau thì sẽ được thay thể bằng cùng 1 số: có thể mất thông tin có giá trị  
+  - Thư viện hỗ trợ: Pandas,Featue-engine
+
+### XỬ LÝ OUTLIER
+- Trimming(Cắt tỉa)
+  - Loại bỏ các điểm outlier ra khỏi tập dữ liệu
+  - Ưu điểm: Nhanh,gọn
+  - Nhược điểm: Các outlier có thể là những điểm thông tin rất hữu ích, Nếu như giá trị outlier quá nhiều và xóa nó đi sẽ mất phần lớn dữ liệu
+  - Quan trọng: Outlier cần phát hiện và chỉ loại bỏ nó trong tập trainning và không loại khỏi tập Test 
+- Censoring/Capping(Kiểm duyệt/Giới hạn)
+  - Giới phạm vi max/mon của phân phối
+  - Có thể giới hạn bằng cách: Tùy ý,IQR,phép xấp xỉ GAUSS,Quantile
+  - Ưu điểm là không loại bỏ dữ liệu
+  - Hạn chế là làm sai lệch phân phối và mối quan hệ giữa các biến 
+### CHUẨN HÓA DỮ LIỆU (Scale Data)
+- **Co giãn Min-Max(MinMaxScaling)**
+  - Co giãn về 0 đến 1
+  - Không tập trung mean ở 0
+  - Phương sai thay đổi trên các biến
+  - Có thể không duy trì hình dạng phân phối ban đầu
+  - Nhạy với outlier
+- **Chuẩn tắc hóa(Standardisation)**
+  - Chuẩn tắc hóa gồm căn biến ở 0 và phương sai thành 1
+  - Z = (X - mean_x)/std
+  - Mean là 0 và độ lệch chuẩn là 1
+  - Duy trì hình dạng phân phối ban đầu
+  - Gía trị min/max của biến khác nhau thay đổi
+  - Duy trì outlier
+- **Chuẩn hóa trung bình(Mean normalisation)**
+  - Co dãn dữ liệu về phạm vị -1 đến 1
+  - tập trung giá trị mean ở 0
+  - Có thể thay đổi hình dạng phân phối ban đầu
+  - Duy trì outlier
+  - X_scale = (X - mean_x) / (max_x - min_x)   
+- **Co giãn về giá trị lớn nhất tuyệt đổi(MaxAbsScaling)**
+  - X_scale = X / abs(Max(X)) 
+  - Không tập trung ở 0
+  - Phương sai thay đổi
+  - Không giữ hình dạng phân phối ban đầu
+  - Nhạy với outlier
+  - Min/Max từ -1 đến 1
+- **Co giãn về trung vị và phân vị (RobustScaling)**
+  - X_scaled = X - median_X / IQR
+  - Căn giữa ở 0
+  - Phương sai thay đổi trên mỗi biến
+  - Làm thay đổi hình dạng phân phối ban đầu
+  - Outlier mạnh mẽ 
+- **Chuẩn hóa độ dài vector đơn vị**
+  - Co dãn các vector đặc trưng có chuẩn là 1
+  - Co dãn về vector đơn vị bằng cách chia cho khoảng cách Manhattan (l1) hoặc khoảng cách euclid (l2) 
+### LỰA CHỌN ĐẶC TRƯNG (Select feature)
+- Lựa chọn đặc trưng theo phương pháp gói
+  - Dùng thuật toán học máy để dự đoán, lựa chọn tập hợp con đặc trưng tối ưu. Về bản chất thì, phương pháp gói xây dựng một thuật toán học máy cho từng tập hợp con đặc trưng mà chúng đánh giá, sau đó chọn tập hợp con của biến tạo ra thuật toán có chất lượng cao nhất. 
+  -  Lựa chọn đặc trưng theo phương pháp văn xuôi
+     - Huấn luyện mô hình cho từng đặc trưng trong tập dữ liệu và lựa chọn đặc trưng mở đầu khiến mô hình hoạt động tốt nhất theo tiêu chí đánh giá
+     - Nó tạo ra mô hình cho tất cả các tổ hợp đặc trưng ở bước trước và đặc trưng thứ 2, có nghĩ là thêm mỗi lần 1 đặc trưng vào các đặc trưng ở bước trước cho khi xác định dừng
+     - Về lý thuyết, các mô hình có nhiều đặc trưng hơn sẽ hoạt động tốt hơn. Thuật toán sẽ tiếp tục thêm đặc trưng mới cho đến khi đáp ứng tiêu chí, ngưỡng nhất định nào đó
+     - Phép đo chất lượng mô hình có thể ROC-AUC hoặc R2 tùy người xác định nó  
+  -  Lựa chọn đặc trưng theo phương pháp ngược
+     - Huấn luyện mô hình với tất cả đặc trưng trong tập dữ liệu và xác định chất lượng mô hình
+     - Sau đó, huấn luyện mô hình trên tất cả tổ hợp có thể có của tất cả đặc trưng -1, loại bỏ đặc trưng trả về mô hình có chất lượng cao khi đặc trưng loại bỏ đi
+     - Thuật toán dừng tùy thuộc tiêu chí dừng
+     - Lựa chọn đặc trưng theo phương pháp ngược gọi là thủ tục tham lam vì nó đánh giá tất cả tổ hợp đặc trưng n, rồi n-1, rồi n-2,....Do đó, nó rất khó tính toán và thấm chí không khả thi nếu không gian đặc trưng lớn  
+- Lựa chọn đặc trưng theo phương pháp lọc
+  - Loại bỏ các đặc trưng trùng lặp, đặc trưng không đổi, đặc trưng gần như không đổi
+    - Các đặc trưng thường có giá trị trùng lặp về cở bản là giống nhau, như vậy sẽ sinh ra dừ thừa dữ liệu gây ra overfit, vì vậy chúng ta cần loại bỏ nó giúp mô hình đơn giản hơn
+  - Loại bỏ các đặc trưng tương quan
+    - Tương quan là phép đo lượng tuyến tính của 2 biến ngẫu nhiên, mức độ tương cao càng cao thì tuyến tính càng cao rất phù hợp cho các mô hình tuyến tính
+    - Tuy nhiên, nếu 2 biến dự báo có tương cao, thì bản chất, chúng sẽ cung cấp thông tin dư thừa thông tin về mục tiêu, vì chúng ta có thể dự đoán biến tiêu chỉ cần 1 biến dự báo
+    - Để tạo mô hình học máy tốt, chúng ta cần tìm những biến có tương quan cao với biến mục tiêu nhưng không tương với biến khác. Nói cách khác là, chúng ta muốn yếu tố dự đoán tương với mục tiêu chứ không tương lại với nhau
+  - Lựa chọn các đặc trưng dựa trên anova
+    - Anova là kiểm định thống kê đánh giá giả thuyết có 2 hoặc nhiều mẫu có giá trị trung bình. Anova đưa ra một số giả định về các mẫu mà chúng ta đang đánh giá - chúng độc lập, được phân bố chuẩn - đồng nhất về phương sai. 
+- Lựa chọn đặc trưng theo phương pháp nhúng
+  - Lựa chọn đặc trưng theo mô hình hồi quy (Lasso Regression)
+    - Huấn luyện mô hình hồi quy tuyến tính và thêm yếu tố regularization (l1). Và có trọng số W tìm được có xu hướng rất nhiều phần tử không. Các thành phần w khác 0 tương đương với những đặc trưng quan trọng đóng góp vào việc dự đoán đầu ra. Các đặc trưng tương với w = 0 được coi ít quan trọng. Chính vì vậy giúp lựa chọn đặc trưng 
+  - Lựa chọn đặc trưng loại bỏ đặc trưng bằng đề quy (Recursive Feature Elimination)
+    - Xếp mức độ quan trọng của các đặc trưng theo mô hình
+    - Loại bỏ các đặc trưng ít quan trong nhất và xây dựng mô hình với các đặc trưng còn lại
+    - Tính toán phép đo lường chất lượng:roc-auc, mse, rmse,....
+    - Nếu phép đo giảm nhiều hơn ngưỡng được thiết lập thì đặc trưng đó quan trọng và giữ lại, nếu không , xóa
+    - Lặp lại các bước 2,3,4 cho đến khi các đặc trưng đc đánh giá
+    => Thư viện hỗ trợ: Feature-engine
+  - Lựa chọn đặc trưng thêm đặc trưng bằng đệ quy (Recursive Feature Addition)
+    -  Xếp mức độ quan trọng của các đặc trưng theo mô hình
+    -  Xây dựng mô hình chỉ 1 đặc trưng, đặc trưng quan trọng nhất, đánh giá chất lượng
+    -  Thêm một đặc trưng - đặc trưng quan trọng nhất và xây dựng mô hình với đặc trưng ở bước trước
+    -  Tính toán các phép đo lường
+    -  Nếu phép đo lường tăng nhiều hơn ngưỡng đc thiết lập thì đặc trưng đó giữ lại còn không xóa
+    -  Lặp lại các bước trên khi nào đi qua hết các đặc trưng
+    => Thư viện hỗ trợ: Feature-engine
+  - Xóa trộn ngẫu nhiên (Feature Shuffling): Là hoán vị các giá trị đặc trưng tại 1 thời điểm đó và đo lường mức độ hoán vị (hoặc xóa trộn các giá trị của nó) làm giảm độ chính xác 
+    - Xây dựng mô hình học máy và lưu trữ phép đo lường
+    - Xáo trộn 1 đặc trưng và đưa ra dự đoán mới sử dụng mô hình trước đó
+    - Xác định chất lượng của dự đoán này
+    - Xác định thay đổi về chất lượng của dự đoán với các đặc trưng đã xáo trộn với đặc trưng ban đầu.
+    - Lặp lại cho từng đặc trưng 
+
+
+
+=> [Tham khảo source code](https://github.com/solegalli/feature-selection-for-machine-learning)
+
+
+
+
+
+
